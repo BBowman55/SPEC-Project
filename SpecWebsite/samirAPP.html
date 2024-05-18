@@ -137,10 +137,6 @@
                             <label for="signupRetypePassword" class="form-label">Retype Password</label>
                             <input type="password" class="form-control" id="signupRetypePassword" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="signupLogo" class="form-label">Upload Logo</label>
-                            <input type="file" class="form-control" id="signupLogo">
-                        </div>
                         <button type="submit" class="btn btn-primary">Sign Up</button>
                     </form>
                 </div>
@@ -173,10 +169,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS and Custom JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
     <script>
         function toggleDescription() {
             document.getElementById("description").style.display = document.getElementById("description").style.display === "none" ? "block" : "none";
@@ -192,6 +184,7 @@
             const eventsContainer = document.getElementById("eventsContainer");
             eventsContainer.innerHTML = "";
             const events = JSON.parse(localStorage.getItem("events") || "[]");
+            const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
             events.forEach((event, index) => {
                 const eventCard = document.createElement("div");
                 eventCard.className = "event-card show";
@@ -200,8 +193,9 @@
                     <p>${event.description}</p>
                     <p><strong>Date:</strong> ${event.date}</p>
                     <p><strong>Time:</strong> ${event.time}</p>
+                    ${event.creator === currentUser.username ? `
                     <button onclick="editEvent(${index})" class="btn btn-secondary">Edit</button>
-                    <button onclick="deleteEvent(${index})" class="btn btn-danger">Delete</button>
+                    <button onclick="deleteEvent(${index})" class="btn btn-danger">Delete</button>` : ""}
                 `;
                 eventsContainer.appendChild(eventCard);
                 setTimeout(() => {
@@ -217,8 +211,9 @@
             const eventDate = document.getElementById('eventDate').value;
             const eventTime = document.getElementById('eventTime').value;
             const eventId = document.getElementById('eventId').value;
+            const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
-            const newEvent = { name: eventName, description: eventDescription, date: eventDate, time: eventTime };
+            const newEvent = { name: eventName, description: eventDescription, date: eventDate, time: eventTime, creator: currentUser.username };
             let events = JSON.parse(localStorage.getItem("events") || "[]");
 
             if (eventId) {
@@ -266,16 +261,16 @@
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const retypePassword = document.getElementById('signupRetypePassword').value;
-            const logo = document.getElementById('signupLogo').files[0]; // Get the uploaded logo file
 
             if (password !== retypePassword) {
                 alert('Passwords do not match!');
                 return;
             }
 
-            const user = { username, email, password, logo }; // Include the logo in the user data
+            const user = { username, email, password };
             localStorage.setItem('user', JSON.stringify(user));
             localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('currentUser', JSON.stringify(user));
             alert('Signed up successfully!');
             $('#signupModal').modal('hide');
             checkAuth();
@@ -289,6 +284,7 @@
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             if (user.email === email && user.password === password) {
                 localStorage.setItem('loggedIn', 'true');
+                localStorage.setItem('currentUser', JSON.stringify(user));
                 alert('Signed in successfully!');
                 $('#signinModal').modal('hide');
                 checkAuth();
@@ -299,6 +295,7 @@
 
         function logout() {
             localStorage.setItem('loggedIn', 'false');
+            localStorage.removeItem('currentUser');
             alert('Logged out successfully!');
             checkAuth();
         }
@@ -309,24 +306,6 @@
             document.getElementById('signupBtn').style.display = loggedIn ? 'none' : 'inline-block';
             document.getElementById('signinBtn').style.display = loggedIn ? 'none' : 'inline-block';
             document.getElementById('logoutBtn').style.display = loggedIn ? 'inline-block' : 'none';
-
-            // Display user's name or logo after login
-            if (loggedIn) {
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                const username = user.username;
-                const logo = user.logo;
-                const logoUrl = URL.createObjectURL(logo); // Create a URL for the logo file
-
-                // Display username or logo
-                if (username) {
-                    document.getElementById('userDisplay').innerText = `Welcome, ${username}!`;
-                } else if (logo) {
-                    const logoImg = document.createElement('img');
-                    logoImg.src = logoUrl;
-                    logoImg.alt = 'User Logo';
-                    document.getElementById('userDisplay').appendChild(logoImg);
-                }
-            }
         }
 
         window.onload = function() {
@@ -334,9 +313,8 @@
             renderEvents();
         };
     </script>
-    <footer>
-        <p>&copy; 2024, All rights reserved.</p>
-    </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
-
