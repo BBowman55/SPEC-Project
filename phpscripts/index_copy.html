@@ -185,33 +185,20 @@
             renderEvents();
         }
 
-        function renderEvents(events) {
-            const eventsContainer = document.getElementById('eventsContainer');
-            eventsContainer.innerHTML = '';
-            events = events || JSON.parse(localStorage.getItem("events") || "[]");
-            localStorage.setItem("events", JSON.stringify(events));
-            events.forEach((event, index) => {
-                const eventCard = document.createElement('div');
-                eventCard.className = 'event-card';
-                eventCard.innerHTML = `
-                    <h3>${event.name}</h3>
-                    <p>${event.description}</p>
-                    <p>Date: ${event.date}</p>
-                    <p>Time: ${event.time}</p>
-                    <button onclick="editEvent(${index})" class="btn btn-primary">Edit</button>
-                    <button onclick="deleteEvent(${index})" class="btn btn-danger">Delete</button>
-                `;
-                eventCard.classList.add('show');
-                eventsContainer.appendChild(eventCard);
-            });
-        }
-
-        function fetchEvents() {
+      function fetchEvents() {
     $.ajax({
         type: 'GET',
-        url: 'displayevents.php',
+        url: 'get_events.php',
         success: function(response) {
-            renderEvents(JSON.parse(response));
+            // Parse the events if they are not already an array
+            let events;
+            try {
+                events = JSON.parse(response);
+            } catch (e) {
+                console.error('Error parsing events:', e);
+                return;
+            }
+            renderEvents(events);
         },
         error: function(xhr, status, error) {
             alert("Error fetching events: " + xhr.responseText);
@@ -220,61 +207,59 @@
 }
 
 function renderEvents(events) {
-    const eventsContainer = document.getElementById('eventsContainer');
-    eventsContainer.innerHTML = '';
-    events.forEach((event) => {
-        const eventCard = document.createElement('div');
-        eventCard.className = 'event-card';
+    const eventsContainer = document.getElementById("eventsContainer");
+    eventsContainer.innerHTML = "";
+    if (Array.isArray(events)) {
+        events.forEach((event, index) => {
+        const eventCard = document.createElement("div");
+        eventCard.className = "event-card show";
         eventCard.innerHTML = `
             <h3>${event.name}</h3>
             <p>${event.description}</p>
-            <p>Date: ${event.date}</p>
-            <p>Time: ${event.time}</p>
-            <p>Creator: ${event.creator}</p>
+            <p><strong>Date:</strong> ${event.date}</p>
+            <p><strong>Time:</strong> ${event.time}</p>
+            ${event.creator === currentUser.username ? `
+            <button onclick="editEvent(${index})" class="btn btn-secondary">Edit</button>
+            <button onclick="deleteEvent(${index})" class="btn btn-danger">Delete</button>` : ""}
         `;
         eventsContainer.appendChild(eventCard);
+        setTimeout(() => {
+            eventCard.classList.remove('hide');
+        }, 10);
     });
+    } else {
+        console.error('Expected events to be an array, got:', events);
+    }
 }
 
-
-
-
-    document.getElementById('eventCreationForm').addEventListener('submit', function(event) {
+document.getElementById('eventCreationForm').addEventListener('submit', function(event) {
     event.preventDefault();
     const eventName = document.getElementById('eventName').value;
     const eventDescription = document.getElementById('eventDescription').value;
     const eventDate = document.getElementById('eventDate').value;
     const eventTime = document.getElementById('eventTime').value;
-    const eventId = document.getElementById('eventId').value;
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
-    const newEvent = { name: eventName, description: eventDescription, date: eventDate, time: eventTime, creator: currentUser.username };
-
-    // Send a POST request to create_event.php
-    fetch('create_event.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+    $.ajax({
+        type: 'POST',
+        url: 'create_event.php',
+        data: {
+            eventName: eventName,
+            eventDescription: eventDescription,
+            eventDate: eventDate,
+            eventTime: eventTime,
+            creator: currentUser.username
         },
-        body: new URLSearchParams(newEvent),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Error:', data.error);
-        } else {
-            alert('Event saved successfully!');
+        success: function(response) {
+            alert(response);
             $('#eventCreatorModal').modal('hide');
-            renderEvents();
+            fetchEvents(); // Refresh events after creation
+        },
+        error: function(xhr, status, error) {
+            alert("Error creating event: " + xhr.responseText);
         }
-    })
-    .catch((error) => {
-        console.error('Error:', error);
     });
 });
-
-
-
 
         function editEvent(index) {
             const events = JSON.parse(localStorage.getItem("events") || "[]");
@@ -333,26 +318,26 @@ function renderEvents(events) {
 });
 
 
-document.getElementById('signinForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const email = document.getElementById('signinEmail').value;
-    const password = document.getElementById('signinPassword').value;
-
-    // AJAX request to submit form data to PHP script
-    $.ajax({
-        type: 'POST',
-        url: 'signin.php',
-        data: { signinEmail: email, signinPassword: password },
-        success: function(response) {
-            alert(response); // Alert the response from the PHP script
-            $('#signinModal').modal('hide');
-            // You can redirect the user to another page if needed
-        },
-        error: function(xhr, status, error) {
-            alert("Error: " + xhr.responseText); // Alert any errors
-        }
+    document.getElementById('signinForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const email = document.getElementById('signinEmail').value;
+        const password = document.getElementById('signinPassword').value;
+    
+        // AJAX request to submit form data to PHP script
+        $.ajax({
+            type: 'POST',
+            url: 'signin.php',
+            data: { signinEmail: email, signinPassword: password },
+            success: function(response) {
+                alert(response); // Alert the response from the PHP script
+                $('#signinModal').modal('hide');
+                // You can redirect the user to another page if needed
+            },
+            error: function(xhr, status, error) {
+                alert("Error: " + xhr.responseText); // Alert any errors
+            }
+        });
     });
-});
 
 
         function logout() {
