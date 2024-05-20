@@ -1,0 +1,46 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<link rel = "stylesheet" href="styles\myStyles.css" />
+<link rel = "stylesheet" href="styles\loginStyle.css" />
+
+<div class = "header">
+    <h1> NutureNet</h1>
+    <p> Your Account </p>
+</div>
+
+<body>
+
+<div class = "navbar">
+    <a href = "account.html" class = "account">Account</a>
+    <a href = "#">Contact us</a>
+    <a href = "purchase.html">Purchase</a>
+    <a href = "index.html">Home</a>
+    <a class = "left">NutureNet</a>
+</div>
+
+<div class="container">
+    <h1>Sign Up</h1>
+    <form id="signup-form">
+        <label for="email"><b>Email:</b></label>
+        <input type="text" id="email" placeholder="Enter Email" name="email" required>
+
+        <label for="password"><b>Password:</b></label>
+        <input type="password" id="password" placeholder="Enter Password" name="password" required>
+
+        <label for="password-repeat"><b>Repeat Password</b></label>
+        <input type="password" id="password-repeat" placeholder="Repeat Password" name="password-repeat" required>
+
+        <button type="submit">Signup</button>
+    </form>
+    
+<script src = "scripts/signup.js" defer></script>
+</body>
+</html>
