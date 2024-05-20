@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 include 'db_connect.php';
 
@@ -17,20 +16,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($user) {
             if (password_verify($password, $user['password'])) {
-                // Store the user_id in the session
-                $_SESSION['user_id'] = $user['user_id'];
-
-                // Set a cookie to indicate that the user is logged in
-                $cookie_name = "user_logged_in";
-                $cookie_value = "true";
-                $cookie_expiry = time() + (86400 * 30); // 30 days
-                setcookie($cookie_name, $cookie_value, $cookie_expiry, "/");
-
                 $response = array(
                     "success" => true,
-                    "message" => "User authenticated successfully",
-                    "user_id" => $user['user_id'] // Include user ID in the response
+                    "message" => "User authenticated successfully"
+
                 );
+
+                $query = "SELECT user_id FROM users WHERE email = ?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
             } else {
                 $response = array(
                     "success" => false,
@@ -50,20 +47,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         );
     }
     header('Content-Type: application/json');
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $user_id = $row['user_id'];
+        $response["user_id"] = $user_id;
+    }
     echo json_encode($response);
-
-    // Close the prepared statement
-    $stmt->close();
-} else {
-    // Handle non-POST requests
-    $response = array(
-        "success" => false,
-        "message" => "Invalid request method"
-    );
-    header('Content-Type: application/json');
-    echo json_encode($response);
+    $conn->close();
 }
-
-// Close the database connection
-$conn->close();
 ?>

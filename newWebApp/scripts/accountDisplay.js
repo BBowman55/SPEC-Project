@@ -1,24 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const displayContainer = document.getElementById("displaySection");
 
-    // Check if user is logged in
-    const isLoggedIn = localStorage.getItem("isLoggedIn");  
-    console.log(isLoggedIn);
-    
-
-    // If user is logged in, display appropriate content
-    if (isLoggedIn) {
-        loggedIn();
-    } else {
-        loggedOut();
-    }
-
     function loggedIn(){
         const parentSection = document.createElement("section");
         displayContainer.appendChild(parentSection);
-        
+
         const loggedIn = document.createElement("div");
         parentSection.appendChild(loggedIn);
+
 
         loggedIn.innerHTML = `
         <div class = "box">
@@ -31,17 +20,18 @@ document.addEventListener('DOMContentLoaded', function() {
             <button id = 'btn-view'>Click me</button>
         </div>
         `
-        const createBtn = loggedIn.querySelector('#btn-create');
-        createBtn.addEventListener('click', function(){
+        const registerBtn = loggedIn.querySelector('#btn-create');
+        registerBtn.addEventListener('click', function(){
             location.href = "createEvent.html";
         });
 
-        const viewBtn = loggedIn.querySelector('#btn-view');
-        viewBtn.addEventListener('click', function(){
+        const loginBtn = loggedIn.querySelector('#btn-view');
+        loginBtn.addEventListener('click', function(){
             location.href = "displayEvent.html";
         });
     }
 
+    
     function loggedOut(){
         const parentSection = document.createElement("section");
         displayContainer.appendChild(parentSection);
@@ -54,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         notLogged.innerHTML = `
         <div class = "box">
-            <h1> Signup</h1>
+            <h1> Register</h1>
             <button id = 'btn-register'>Click me</button>
         </div>
 
@@ -65,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `
         const registerBtn = notLogged.querySelector('#btn-register');
         registerBtn.addEventListener('click', function(){
-            location.href = "signup.html";
+            location.href = "register.html";
         });
 
         const loginBtn = notLogged.querySelector('#btn-login');
@@ -74,4 +64,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    
 });

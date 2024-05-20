@@ -1,34 +1,18 @@
 <?php
-session_start(); // Start the session
-include 'db_connect.php';
+include 'db_connect.php'; 
 
-if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    // Retrieve event data from the form
-    $name = $_POST['title'];
-    $description = $_POST['descriptionInput'];
-    $date = $_POST['eventDate'];
-    $time = $_POST['eventTime'];
+foreach ($events as $event) {
+    $name = $mysqli->real_escape_string($event['name']);
+    $description = $mysqli->real_escape_string($event['description']);
+    $date = $mysqli->real_escape_string($event['date']);
+    $time = $mysqli->real_escape_string($event['time']);
+    $creator = $mysqli->real_escape_string($event['creator']);
 
-    // Retrieve creator ID from session
-    if (isset($_SESSION['user_id'])) {
-        $creator_id = $_SESSION['user_id'];
+    $sql = "INSERT INTO events (name, description, date, time, creator) VALUES ('$name', '$description', '$date', '$time', '$creator')";
+
+    if ($mysqli->query($sql) === TRUE) {
+        echo "Event inserted successfully.";
     } else {
-        // Redirect to login page or handle the case where user is not logged in
-        header('Location: login.php');
-        exit;
+        echo "Error: " . $sql . "<br>" . $mysqli->error;
     }
-
-    // Insert event into the database
-    $sql = "INSERT INTO events (name, description, date, time, creator_id) 
-            VALUES ('$name', '$description', '$date', '$time', '$creator_id')";
-    if (mysqli_query($conn, $sql)) {
-        echo "Event created successfully";
-    } else {
-        echo "Error: " . $sql . "<br>" . mysqli_error($conn);
-    }
-} else {
-    echo "Invalid request method";
 }
-
-mysqli_close($conn);
-?>
